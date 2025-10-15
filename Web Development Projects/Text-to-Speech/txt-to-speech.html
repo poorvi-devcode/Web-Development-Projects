@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Text → Good Sound Speech — Demo</title>
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#6ee7b7;
+    --glass: rgba(255,255,255,0.03);
+    --radius:14px;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: dark;
+  }
+  html,body{height:100%; margin:0; background:
+    linear-gradient(180deg, #071021 0%, #081224 60%); color:#e6eef6;}
+  .wrap{max-width:1100px; margin:28px auto; padding:28px; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-radius:18px; box-shadow: 0 10px 40px rgba(2,6,23,0.6);}
+  header{display:flex; gap:16px; align-items:center; margin-bottom:16px;}
+  h1{font-size:20px; margin:0;}
+  .sub{color:var(--muted); font-size:13px;}
+  .grid{display:grid; grid-template-columns: 1fr 360px; gap:18px;}
+  .card{background:var(--card); border-radius:12px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);}
+  textarea{width:100%; min-height:320px; resize:vertical; border-radius:10px; border:1px solid rgba(255,255,255,0.03); padding:12px; background:var(--glass); color:inherit; font-size:15px; line-height:1.5;}
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px;}
+  .controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  select,input[type="range"],button{background:transparent; color:inherit; border:1px solid rgba(255,255,255,0.06); padding:8px 10px; border-radius:8px; font-size:14px;}
+  input[type="range"]{width:130px;}
+  .btn{cursor:pointer; background:linear-gradient(90deg, rgba(110,231,183,0.12), rgba(110,231,183,0.06)); border:1px solid rgba(110,231,183,0.14);}
+  .btn.strong{background:linear-gradient(90deg,#10b981,#34d399); color:#042014; font-weight:700;}
+  .small{font-size:13px; color:var(--muted);}
+  .voices{max-height:160px; overflow:auto; margin-top:8px; border-radius:8px; padding:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02);}
+  .voice-item{padding:8px; border-radius:8px; display:flex; justify-content:space-between; gap:10px; align-items:center;}
+  .meta{font-size:12px; color:var(--muted);}
+  .highlighted{background:linear-gradient(90deg, rgba(110,231,183,0.08), rgba(110,231,183,0.02)); border-radius:6px; padding:2px 4px;}
+  footer{margin-top:14px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between; align-items:center;}
+  .io{display:flex; gap:8px; align-items:center;}
+  .filename{font-size:12px; color:var(--muted);}
+  .danger{background:linear-gradient(90deg,#ef4444,#f97316); color:white;}
+  @media(max-width:980px){ .grid{grid-template-columns:1fr; } .wrap{margin:12px;} }
+</style>
+</head>
+<body>
+<div class="wrap" role="main">
+  <header>
+    <div>
+      <h1>Text → Good Sound Speech</h1>
+      <div class="sub">High-quality browser TTS demo — voice selection, live highlighting, SSML-like emphasis, and export hints.</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card" aria-labelledby="editorTitle">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div>
+          <label id="editorTitle">Script / Paste your text</label>
+          <div class="small">Type or paste the text you want read aloud. Use the controls below for voice, speed, and styling.</div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="loadSample" class="btn">Load sample</button>
+          <input id="fileInput" type="file" accept=".txt" style="display:none;">
+          <button id="openFile" class="btn">Open .txt</button>
+          <button id="saveText" class="btn">Save .txt</button>
+        </div>
+      </div>
+
+      <textarea id="textInput" placeholder="Paste your speech text here...">Ladies and gentlemen, welcome. This demo shows smooth text-to-speech playback with voice selection, rate and pitch control, live sentence highlighting and simple emphasis tags like *strong* or _slow_.</textarea>
+
+      <div style="display:flex; justify-content:space-between; margin-top:12px; gap:8px; align-items:center;">
+        <div class="controls">
+          <div>
+            <label for="voices">Voice</label>
+            <select id="voices"></select>
+          </div>
+
+          <div>
+            <label>Rate <span id="rateVal">1.0</span></label>
+            <input id="rate" type="range" min="0.5" max="2" step="0.05" value="1">
+          </div>
+
+          <div>
+            <label>Pitch <span id="pitchVal">1.0</span></label>
+            <input id="pitch" type="range" min="0" max="2" step="0.05" value="1">
+          </div>
+
+          <div>
+            <label>Volume <span id="volVal">1.0</span></label>
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="1">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="speakBtn" class="btn strong">Speak ▶</button>
+          <button id="pauseBtn" class="btn">Pause ⏸</button>
+          <button id="resumeBtn" class="btn">Resume ▶</button>
+          <button id="cancelBtn" class="btn danger">Stop ✖</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <label class="small">Emphasis hints:</label>
+        <div class="small">Wrap <span class="highlighted">*strong*</span> for emphasis, <span class="highlighted">_slow_</span> to add pauses, or put a sentence on its own line for better pacing.</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label class="small">Playback progress</label>
+        <div id="progressBar" style="height:8px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">
+          <div id="progressFill" style="height:100%; width:0%; background:linear-gradient(90deg,#34d399,#10b981);"></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="card" aria-labelledby="sidebarTitle">
+      <h3 id="sidebarTitle" style="margin:0 0 8px 0;">Voices & Options</h3>
+
+      <div class="small" style="margin-bottom:8px;">Detected voices from your browser. Prefer one labeled with your locale for most natural pronunciation.</div>
+
+      <div id="voiceList" class="voices" role="listbox" aria-label="Available voices">
+        <!-- dynamically populated -->
+      </div>
+
+      <hr style="margin:12px 0; border:0; border-top:1px solid rgba(255,255,255,0.03)">
+
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+        <button id="previewShort" class="btn">Preview voice</button>
+        <button id="testPitch" class="btn">Test pitch</button>
+      </div>
+
+      <div style="margin-top:8px;">
+        <label class="small">Export audio</label>
+        <div class="small" style="margin-top:6px;">
+          Browsers don't reliably let you export TTS audio. For a downloadable file, use a cloud TTS provider (Google, Azure, ElevenLabs). Paste your API key in the optional integration area below and we will show an example request (you must host server-side to protect keys).
+        </div>
+        <button id="showApiExample" class="btn" style="margin-top:8px;">Show API example</button>
+      </div>
+
+      <hr style="margin:12px 0; border:0; border-top:1px solid rgba(255,255,255,0.03)">
+
+      <div>
+        <label class="small">Accessibility</label>
+        <div class="small" style="margin-top:6px;">Live highlighting and clear contrast for screen reader users. Useful keyboard shortcuts: <strong>Ctrl/⌘+Enter</strong> to Speak, <strong>Esc</strong> to Stop.</div>
+      </div>
+
+      <footer>
+        <div class="small">Built with Web Speech API</div>
+        <div class="small">v1 • Demo</div>
+      </footer>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* Text → Good Sound Speech
+   Features:
+   - voice detection & selection
+   - rate/pitch/volume controls
+   - Speak/Pause/Resume/Cancel
+   - live sentence highlighting and progress bar
+   - simple emphasis tags: *strong* and _slow_ (pauses)
+   - sample load, open/save .txt
+   - placeholder to show API example for downloadable audio
+*/
+
+/* Helpers */
+const $ = id => document.getElementById(id);
+const textInput = $('textInput');
+const voicesSelect = $('voices');
+const voiceList = $('voiceList');
+const rate = $('rate'), pitch = $('pitch'), volume = $('volume');
+const rateVal = $('rateVal'), pitchVal = $('pitchVal'), volVal = $('volVal');
+const speakBtn = $('speakBtn'), pauseBtn = $('pauseBtn'), resumeBtn = $('resumeBtn'), cancelBtn = $('cancelBtn');
+const progressFill = $('progressFill');
+const fileInput = $('fileInput'), openFile = $('openFile'), saveText = $('saveText'), loadSample = $('loadSample');
+const showApiExample = $('showApiExample'), previewShort = $('previewShort'), testPitch = $('testPitch');
+
+let synth = window.speechSynthesis;
+let voices = [];
+let utterances = [];
+let currentIndex = 0;
+let sentences = [];
+let playing = false;
+
+/* Voice loading */
+function populateVoices(){
+  voices = synth.getVoices().sort((a,b)=> (a.lang > b.lang)?1:-1);
+  voicesSelect.innerHTML = '';
+  voiceList.innerHTML = '';
+  voices.forEach((v, i)=>{
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${v.name} — ${v.lang}${v.default ? ' (default)':''}`;
+    voicesSelect.appendChild(opt);
+
+    const row = document.createElement('div');
+    row.className = 'voice-item';
+    row.innerHTML = `<div>
+      <div style="font-weight:600">${v.name}</div>
+      <div class="meta">${v.lang} ${v.localService ? '• local' : '• remote'}</div>
+    </div>
+    <div style="font-size:12px; text-align:right"><button data-idx="${i}" class="btn">Preview</button></div>`;
+    voiceList.appendChild(row);
+  });
+}
+populateVoices();
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoices;
+}
+
+/* UI bindings */
+rate.addEventListener('input', ()=> rateVal.textContent = rate.value);
+pitch.addEventListener('input', ()=> pitchVal.textContent = pitch.value);
+volume.addEventListener('input', ()=> volVal.textContent = volume.value);
+
+voicesSelect.addEventListener('change', ()=> { /* nothing extra */ });
+
+voiceList.addEventListener('click', (e)=>{
+  if (e.target.matches('button')){
+    const idx = parseInt(e.target.dataset.idx,10);
+    speakSample('This is a voice preview.', voices[idx]);
+  }
+});
+
+/* File load/save */
+openFile.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', async (e)=>{
+  const f = e.target.files?.[0];
+  if (!f) return;
+  const txt = await f.text();
+  textInput.value = txt;
+});
+saveText.addEventListener('click', ()=>{
+  const blob = new Blob([textInput.value], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'script.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+});
+
+/* Load sample */
+loadSample.addEventListener('click', ()=>{
+  textInput.value = `Hello, this is a demo of the text-to-speech app.
+*This sentence should sound emphasized.* 
+Now a gentle pause follows — _slow_ — and normal voice resumes.
+Thank you for listening.`;
+});
+
+/* Shortcut: Ctrl/Cmd+Enter speak, Esc stop */
+document.addEventListener('keydown', (e)=>{
+  if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { speak(); }
+  if (e.key === 'Escape') { cancelSpeech(); }
+});
+
+/* Speaking mechanics */
+function normalizeTextToSentences(text){
+  // Split by newline and punctuation. Keep simple: split on sentence enders or newlines.
+  const raw = text.replace(/\r/g,'').trim();
+  if (!raw) return [];
+  // Preserve lines as sentences; also split on . ? !
+  let parts = [];
+  raw.split('\n').forEach(line=>{
+    line = line.trim();
+    if (!line) return;
+    // split on sentence punctuation but keep short chunks
+    let segs = line.split(/(?<=[.?!])\s+/);
+    segs.forEach(s=>{
+      s = s.trim();
+      if (s) parts.push(s);
+    });
+  });
+  return parts;
+}
+
+function parseEmphasis(text){
+  // Basic: replace *strong* with the same but we will set utterance.rate/pitch later
+  // Return an object with flags to alter playback: {text, emphasize:boolean, slow:boolean}
+  let emphasize = false, slow = false;
+  let t = text;
+  if (/\*(.*?)\*/.test(t)) { emphasize = true; t = t.replace(/\*(.*?)\*/g,'$1'); }
+  if (/_([^_]+)_/.test(t)) { slow = true; t = t.replace(/_([^_]+)_/g,'$1'); }
+  return {text: t, emphasize, slow};
+}
+
+function speakSample(sampleText, voiceObj){
+  const u = new SpeechSynthesisUtterance(sampleText);
+  if (voiceObj) u.voice = voiceObj;
+  u.rate = Number(rate.value);
+  u.pitch = Number(pitch.value);
+  u.volume = Number(volume.value);
+  synth.cancel(); // clear queue
+  synth.speak(u);
+}
+
+/* Main speak flow */
+async function speak(){
+  if (!('speechSynthesis' in window)) {
+    alert('Sorry — your browser does not support the Web Speech API.');
+    return;
+  }
+  if (playing) {
+    // If already speaking, ignore or restart
+    cancelSpeech();
+  }
+
+  const selectedVoice = voices[Number(voicesSelect.value)] || null;
+  const text = textInput.value.trim();
+  if (!text) { alert('Please enter some text to speak.'); return; }
+
+  sentences = normalizeTextToSentences(text);
+  if (!sentences.length) return;
+
+  currentIndex = 0;
+  playing = true;
+  progressFill.style.width = '0%';
+
+  // speak sentences sequentially
+  for (let i=0;i<sentences.length;i++){
+    if (!playing) break;
+    currentIndex = i;
+    highlightSentence(i);
+    const parsed = parseEmphasis(sentences[i]);
+    let u = new SpeechSynthesisUtterance(parsed.text);
+    if (selectedVoice) u.voice = selectedVoice;
+    // emphasis: slightly faster and higher pitch
+    u.rate = parsed.emphasize ? Math.min(2, Number(rate.value) * 1.08) : Number(rate.value);
+    u.pitch = parsed.emphasize ? Math.min(2, Number(pitch.value) * 1.12) : Number(pitch.value);
+    u.volume = Number(volume.value);
+
+    // Add events to chain
+    await speakUtteranceAsync(u, parsed.slow);
+    // update progress
+    const pct = Math.round(((i+1)/sentences.length)*100);
+    progressFill.style.width = pct + '%';
+  }
+  playing = false;
+  clearHighlight();
+}
+
+/* Wrap utterance speak in a promise and manage pause/resume */
+function speakUtteranceAsync(utterance, slowFlag){
+  return new Promise((resolve, reject)=>{
+    utterance.onend = ()=> {
+      // optional slow pause (if slowFlag true)
+      if (slowFlag) {
+        setTimeout(()=> resolve(), 600); // 600ms pause
+      } else {
+        setTimeout(()=> resolve(), 120); // small natural pause
+      }
+    };
+    utterance.onerror = (e)=> { console.error('TTS error', e); resolve(); };
+    synth.speak(utterance);
+  });
+}
+
+/* Pause / Resume / Cancel */
+pauseBtn.addEventListener('click', ()=> {
+  if (synth.speaking && !synth.paused) synth.pause();
+});
+resumeBtn.addEventListener('click', ()=> {
+  if (synth.paused) synth.resume();
+});
+cancelBtn.addEventListener('click', ()=> cancelSpeech());
+
+function cancelSpeech(){
+  synth.cancel();
+  playing = false;
+  clearHighlight();
+  progressFill.style.width = '0%';
+}
+
+/* Highlighting */
+function highlightSentence(idx){
+  // Create highlighted view by replacing the textarea content visually.
+  // Simpler approach: set selection range to the sentence span indices.
+  const full = textInput.value;
+  let charCount = 0;
+  for (let i=0;i<sentences.length;i++){
+    const s = sentences[i];
+    if (i === idx){
+      // find its index in the original
+      const pos = full.indexOf(s, charCount);
+      if (pos >= 0){
+        textInput.focus();
+        textInput.setSelectionRange(pos, pos + s.length);
+      }
+      break;
+    }
+    charCount += s.length;
+  }
+}
+
+function clearHighlight(){
+  textInput.setSelectionRange(textInput.value.length, textInput.value.length);
+}
+
+/* Buttons */
+speakBtn.addEventListener('click', speak);
+
+/* Example API snippet show (for downloadable audio) */
+showApiExample.addEventListener('click', ()=>{
+  const example = `--- Example: Google Cloud Text-to-Speech (node.js) ---
+/*
+You must keep API keys secret on server side. This example returns audio content (base64).
+*/
+const text = "${textInput.value.trim().slice(0,200)}";
+const fetch = require('node-fetch');
+
+fetch('https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_KEY', {
+  method: 'POST',
+  headers: {'Content-Type':'application/json'},
+  body: JSON.stringify({
+    input:{text},
+    voice:{languageCode:'en-US', name:'en-US-Wavenet-D'},
+    audioConfig:{audioEncoding:'MP3'}
+  })
+})
+.then(r=>r.json()).then(res=>{
+  // res.audioContent is base64 - write to file or send to client
+});
+`;
+  alert('An example snippet has been copied to your clipboard for easy reference.');
+  navigator.clipboard?.writeText(example);
+});
+
+/* Quick preview/test */
+previewShort.addEventListener('click', ()=>{
+  const v = voices[Number(voicesSelect.value)];
+  speakSample('Hello! This is a quick preview.', v);
+});
+testPitch.addEventListener('click', ()=>{
+  const v = voices[Number(voicesSelect.value)];
+  const u1 = new SpeechSynthesisUtterance('Testing low pitch.');
+  u1.pitch = 0.5; u1.voice = v; u1.rate = 0.95;
+  const u2 = new SpeechSynthesisUtterance('Testing high pitch.');
+  u2.pitch = 1.6; u2.voice = v; u2.rate = 0.95;
+  synth.cancel(); synth.speak(u1); setTimeout(()=>synth.speak(u2), 800);
+});
+
+/* Keyboard accessibility: make controls reachable */
+[voicesSelect, rate, pitch, volume, speakBtn, pauseBtn, resumeBtn, cancelBtn].forEach(el=>{
+  el.tabIndex = 0;
+});
+
+/* Initialize default values */
+rateVal.textContent = rate.value;
+pitchVal.textContent = pitch.value;
+volVal.textContent = volume.value;
+
+</script>
+</body>
+</html>

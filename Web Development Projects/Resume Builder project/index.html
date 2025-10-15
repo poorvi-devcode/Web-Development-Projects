@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Resume Builder</h1>
+  <div class="container">
+
+    <!-- Form Section -->
+    <div class="form-section">
+      <h2>Enter Your Details</h2>
+      <input type="text" id="name" placeholder="Full Name">
+      <input type="text" id="contact" placeholder="Phone">
+      <input type="text" id="contact" placeholder=" Email">
+      <input type="text" id="contact" placeholder="LinkedIn">
+      <textarea id="education" placeholder="Education (Degree, University, Year)"></textarea>
+      <textarea id="experience" placeholder="Work Experience (Role, Company, Achievements)"></textarea>
+      <textarea id="projects" placeholder="Projects (Name, Tech, Highlights)"></textarea>
+      <textarea id="skills" placeholder="Skills (comma separated)"></textarea>
+      <textarea id="languages" placeholder="Languages (comma separated)"></textarea>
+      <button onclick="generateResume()">Generate Resume</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+    </div>
+
+    <!-- Resume Preview -->
+    <div class="preview-section" id="resume-preview">
+      <h2 id="r-name"></h2>
+      <p id="r-contact"></p>
+      <hr>
+      <h3>Education</h3>
+      <p id="r-education"></p>
+      <h3>Experience</h3>
+      <p id="r-experience"></p>
+      <h3>Projects</h3>
+      <p id="r-projects"></p>
+      <h3>Skills</h3>
+      <p id="r-skills"></p>
+      <h3>Languages</h3>
+      <p id="r-languages"></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+</body>
+</html>

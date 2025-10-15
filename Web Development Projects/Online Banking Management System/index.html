@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banking Management System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>🏦 Banking Management System</h1>
+
+    <!-- Create Account -->
+    <div class="card">
+        <h2>Create Account</h2>
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="number" id="accountNumber" placeholder="Account Number">
+        <input type="number" id="balance" placeholder="Initial Balance">
+        <button id="createAccount">Create Account</button>
+    </div>
+
+    <!-- Banking Operations -->
+    <div class="card">
+        <h2>Bank Operations</h2>
+        <select id="selectAccount">
+            <option value="">Select Account</option>
+        </select>
+        <input type="number" id="amount" placeholder="Amount">
+        <button id="deposit">Deposit</button>
+        <button id="withdraw">Withdraw</button>
+        <input type="number" id="transferAmount" placeholder="Amount to Transfer">
+        <select id="transferAccount">
+            <option value="">Select Recipient</option>
+        </select>
+        <button id="transfer">Transfer</button>
+    </div>
+
+    <!-- Account Details -->
+    <div class="card">
+        <h2>Account Details</h2>
+        <button id="showDetails">Show Details</button>
+        <div id="accountDetails"></div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

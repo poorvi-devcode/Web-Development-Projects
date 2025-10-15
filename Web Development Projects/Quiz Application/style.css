@@ -1,0 +1,99 @@
+/* General Styling */
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  color: #333;
+}
+
+/* Quiz Box */
+.quiz-container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  width: 420px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  text-align: center;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* Title */
+.title {
+  margin-bottom: 15px;
+  color: #4a4a4a;
+}
+
+/* Progress Bar */
+.progress-container {
+  background: #ddd;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 12px;
+  margin-bottom: 20px;
+}
+#progress-bar {
+  background: linear-gradient(90deg, #36d1dc, #5b86e5);
+  width: 0%;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+/* Question */
+h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+/* Options */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  text-align: left;
+}
+ul li {
+  margin: 12px 0;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+ul li:hover {
+  background: #f1f1f1;
+}
+label {
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+/* Button */
+button {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: transform 0.2s ease, background 0.3s;
+}
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #5b86e5, #36d1dc);
+}
+
+/* Result */
+.result h2 {
+  margin-bottom: 20px;
+  color: #444;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
